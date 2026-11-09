@@ -55,13 +55,25 @@ def run_agent(
         if on_step:
             on_step(name, args, result)
 
-        # loop memory: assistant's tool call + the real tool output
+        # loop memory: assistant's tool call + the real tool output.
+        # Every injection carries a step counter: 4B models do not stop by
+        # themselves, so we keep reminding them the budget is finite.
+        left = max_steps - step - 1
         messages.append({"role": "assistant", "content": reply})
         messages.append({
             "role": "user",
-            "content": AGENT_SYSTEM
-            + f"Tool result for step {step + 1}:\n\n{result}",
+            "content": (
+                f"Tool result for step {step + 1} of {max_steps}:\n\n{result}\n\n"
+                + (
+                    f"You have {left} steps left."
+                    if left else "NO STEPS LEFT."
+                )
+                + " As soon as you have enough information, STOP calling "
+                "tools and write the final answer as plain text now."
+            ),
         })
 
-    return ("Stopped after the step budget without a final answer; "
-            "here is the last tool output:\n" + result)
+    # budget exhausted: one forced synthesis turn, tools withheld
+    prompt = engine.prompt_for(messages, system=None)
+    reply = engine.generate_raw(prompt, max_tokens=400)
+    return reply.strip()

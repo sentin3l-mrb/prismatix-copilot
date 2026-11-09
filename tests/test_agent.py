@@ -41,9 +41,10 @@ def test_tool_call_then_answer():
 
 def test_step_budget_stops_the_loop():
     call = F + '{"name": "search_text", "arguments": {"pattern": "x"}}' + F
-    eng = ScriptedEngine([call] * 10)          # model that never stops
+    # endless model, then a canned "synthesis" turn for the forced final step
+    eng = ScriptedEngine([call] * 10 + ["Forced final answer without tools."])
     answer = run_agent(eng, "loop forever", max_steps=3)
-    assert "step budget" in answer
+    assert answer == "Forced final answer without tools."
 
 
 def test_parser_shapes_and_failures():

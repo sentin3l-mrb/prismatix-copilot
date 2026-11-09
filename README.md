@@ -29,16 +29,34 @@ fully on your own laptop**. No cloud, no API keys, no data leaves the machine.
 
 Benchmark: 16 tasks · deterministic graders · same seed (7) for both runs.
 
-| benchmark (16 tasks) | base Qwen3.5-4B-4bit | + LoRA adapter |
-|---|---|---|
-| coding (6) | 5/6 | TBD |
-| sql (3) | 3/3 | TBD |
-| brief (4) | 2/4 | TBD |
-| email (3) | 3/3 | TBD |
-| **total pass rate** | **13/16 (81%)** | TBD |
-| avg generation | 41.2 tok/s | TBD |
+| benchmark (16 tasks) | base 4-bit | v2 LoRA (rank 16, scale 10) | v3 LoRA (rank 8, scale 2) |
+|---|---|---|---|
+| coding (6) | **5/6** | 4/6 | 4/6 |
+| sql (3) | **3/3** | 2/3 | 2/3 |
+| brief (4) | 2/4 | **4/4** | 3/4 |
+| email (3) | **3/3** | 2/3 | **3/3** |
+| **total pass rate** | **13/16 (81%)** | 12/16 (75%) | 12/16 (75%) |
+| avg generation | **41.2 tok/s** | 24.9 tok/s | 28.2 tok/s |
+| trainable params | — | 16.2M (0.386%) | 8.1M (0.193%) |
+| final val loss | — | ~0.006 (saturated) | 0.089 (healthy curve) |
 
-Base-model notes (from the run, artifacts/eval_runs/base.jsonl):
+### How to read this (the honest verdict)
+- **The base model is the strongest generalist** (13/16, fastest).
+- **Both adapters bought style, paid generalization**: v2 moved the brief
+  category 2/4 → 4/4 (the fine-tune's target) at a small cost in code/sql/email;
+  v3 kept emails intact and fits better generation health, trained with a
+  loss curve that did **not** saturate (~0.089 vs v2's ~0.006).
+- The **first** LoRA run (v1, lr 1e-4 × LoRA scale 20) sat at 0/16:
+  its recipe degenerated generation — see LOG.md #14–15.
+- Conclusion in one line: *a small model + RAG is the right lever for
+  correctness, while a LoRA is the right tool for house style — so the repo
+  ships both adapters and a flag, and per-command adapter selection is left
+  as documented future work.*
+- Both adapters ship in the repo; you choose per taste:
+  `python -m prismatix --adapter adapters/prismatix-style-v2   # briefs mode`
+  `python -m prismatix --adapter adapters/prismatix-style-v3   # balanced`
+
+### Base-model notes (from the run, artifacts/eval_runs/base.jsonl)
 - coding fail: model emitted a Python dict comprehension with an unparenthesized
   `:=` (SyntaxError) — code that "looks right" but doesn't run.
 - briefs: facts present but rephrased ("34% of 63" instead of stating "63");

@@ -19,6 +19,7 @@ grad_checkpoint: true
 grad_accumulation_steps: 4
 mask_prompt: true
 seed: 42
+max_seq_length: 1024
 lora_parameters:
   rank: 8
   dropout: 0.0

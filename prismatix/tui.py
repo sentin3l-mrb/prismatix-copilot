@@ -21,6 +21,7 @@ class PrismatixApp(App):
     TITLE = "prismatix"
     SUB_TITLE = "local copilot on Qwen3.5-4B (mlx)"
     BINDINGS = [("ctrl+c", "quit", "Quit"), ("ctrl+l", "clear", "Clear")]
+    AUTO_FOCUS = "Input"      # keyboard focus starts in the chat input
     CSS = """
     RichLog { height: 1fr; padding: 0 1; }
     Input { dock: bottom; margin: 0 1 1 1; }
@@ -43,6 +44,7 @@ class PrismatixApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.query_one(Input).focus()
         log = self.query_one("#log", RichLog)
         log.write(f"[bold]prismatix[/] — {self.engine.model_id}"
                   + (f" + adapter {self.adapter}" if self.adapter else ""))

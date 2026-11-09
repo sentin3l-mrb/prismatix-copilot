@@ -18,3 +18,4 @@ build/
 *.keys
 .env
 private_docs/
+docs/my_project_simply.md

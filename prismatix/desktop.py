@@ -49,7 +49,7 @@ def launch_window(url: str) -> bool:
     except ImportError:
         return False
     webview.create_window(
-        "prismatix — local copilot", url,
+        "prismatix — local copilot · by sentin3l-mrb", url,
         width=1120, height=760, min_size=(760, 560),
     )
     webview.start()          # native event loop; blocks until window closes

@@ -1,5 +1,7 @@
 # prismatix — a local, privacy-first developer & business copilot
 
+**by [sentin3l-mrb](https://github.com/sentin3l-mrb)**
+
 An OpenCode-style terminal copilot built on a **small open-weight model running
 fully on your own laptop**. No cloud, no API keys, no data leaves the machine. 
 

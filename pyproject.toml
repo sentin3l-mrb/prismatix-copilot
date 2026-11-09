@@ -5,6 +5,7 @@ description = "Local, privacy-first developer & business copilot TUI built on a 
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [{ name = "sentin3l-mrb (Denis Polkanov)" }]
 dependencies = [
     "mlx-lm>=0.20",
     "fastembed>=0.3",

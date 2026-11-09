@@ -48,7 +48,8 @@ class PrismatixApp(App):
         self.query_one(Input).focus()
         log = self.query_one("#log", RichLog)
         log.write(f"[bold]prismatix[/] — {self.engine.model_id}"
-                  + (f" + adapter {self.adapter}" if self.adapter else ""))
+                  + (f" + adapter {self.adapter}" if self.adapter else "")
+                  + "  ·  by sentin3l-mrb")
         if self.rag:
             n = self.retriever.store.count()
             log.write(f"[dim]retrieval index: {n} chunks (run /index to rebuild)[/]")

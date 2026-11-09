@@ -34,10 +34,11 @@ def sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
-def build_app(engine: Optional[LocalEngine] = None, retriever=None) -> FastAPI:
+def build_app(engine: Optional[LocalEngine] = None, retriever=None,
+              model_id: Optional[str] = None, adapter: Optional[str] = None) -> FastAPI:
     """app factory so tests can inject a fake engine."""
     app = FastAPI(title="prismatix desktop")
-    eng = engine or LocalEngine()
+    eng = engine or LocalEngine(model_id=model_id, adapter_path=adapter)
     app.state.retriever = retriever
 
     @app.get("/")

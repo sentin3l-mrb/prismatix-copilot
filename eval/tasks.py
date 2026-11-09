@@ -29,6 +29,16 @@ from eval.graders import (
 # ==========================================================================
 # 1. CODING TASKS  (hidden unit tests exercise the model's own code)
 # ==========================================================================
+def _raises(fn):
+    def run(ns):
+        try:
+            fn(ns)
+        except ValueError:
+            return
+        raise AssertionError("expected ValueError")
+    return run
+
+
 CODING_TASKS: List[dict] = [
     {
         "id": "code_word_count",
@@ -120,16 +130,6 @@ CODING_TASKS: List[dict] = [
         }),
     },
 ]
-
-
-def _raises(fn):
-    def run(ns):
-        try:
-            fn(ns)
-        except ValueError:
-            return
-        raise AssertionError("expected ValueError")
-    return run
 
 
 # ==========================================================================

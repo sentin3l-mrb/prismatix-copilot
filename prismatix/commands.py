@@ -112,6 +112,11 @@ def route(text: str, history: Optional[List[dict]] = None,
                     system="You answer from provided sources, concisely, in 2-4 sentences.",
                     max_tokens=350)
 
+    if cmd == "/do":
+        from prismatix.agent import AGENT_SYSTEM
+        return Turn(mode="do", messages=[{"role": "user", "content": rest}],
+                    system=AGENT_SYSTEM, max_tokens=0)  # 0 = handled by the loop
+
     if cmd == "/code" or not cmd:
         user = rest
         msgs: List[dict] = []

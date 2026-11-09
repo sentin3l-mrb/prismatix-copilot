@@ -23,6 +23,15 @@ def headless_main(argv=None) -> None:
 
     turn = route(args.prompt)
     if turn is None or turn.max_tokens == 0:
+        if turn is not None and turn.mode == "do":
+            goal = args.prompt[len("/do"):].strip()
+            steps: list[str] = []
+            answer = run_agent(LocalEngine(model_id=args.model), goal,
+                               on_step=lambda t, a, o: steps.append(f"{t} {a}"))
+            for s in steps:
+                print(f"[tool] {s}")
+            print(answer)
+            return
         print(HELP)
         return
 

@@ -90,24 +90,27 @@ class LocalEngine:
     def prompt_for(
         self,
         messages: List[dict],
-        system: Optional[str] = None,
+        system: Optional[str] = ...,   # None disables; default injects persona
         add_generation_prompt: bool = True,
         thinking: bool = False,
+        tools: Optional[list] = None,
     ) -> str:
         msgs = []
-        sys = system or SYSTEM_PROMPT
+        sys = SYSTEM_PROMPT if system is ... else system
         if sys:
             msgs.append({"role": "system", "content": sys})
         msgs.extend(messages)
         # Qwen3.5 is a thinking hybrid; its chat template supports
         # `enable_thinking`. Copilots want direct answers, so default False.
         # (Templates that don't know this kwarg simply ignore it.)
-        return self._tokenizer.apply_chat_template(
-            msgs,
+        kwargs = dict(
             tokenize=False,
             add_generation_prompt=add_generation_prompt,
             enable_thinking=thinking,
         )
+        if tools:
+            kwargs["tools"] = tools          # Qwen templates emit tool docs
+        return self._tokenizer.apply_chat_template(msgs, **kwargs)
 
     def count_tokens(self, messages: List[dict], system: Optional[str] = None) -> int:
         return len(self._tokenizer.encode(self.prompt_for(messages, system=system)))
@@ -151,6 +154,19 @@ class LocalEngine:
             model_id=self.model_id,
             adapter=self.adapter_path,
         )
+
+    # -- raw generation for the agent loop ------------------------------------
+    def generate_raw(self, prompt: str, max_tokens: int = 500) -> str:
+        """One completion of an ALREADY-templated prompt (agent loop uses
+        this: it manages its own message list and chat templates)."""
+        from mlx_lm import generate as lm_generate
+
+        self.load()
+        t0 = time.perf_counter()
+        text = lm_generate(self._model, self._tokenizer, prompt=prompt,
+                           max_tokens=max_tokens, verbose=False)
+        self.last_raw_seconds = time.perf_counter() - t0
+        return text
 
     # -- streaming (what the TUI uses) ---------------------------------------
     def stream(

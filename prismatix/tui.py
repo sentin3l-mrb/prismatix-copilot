@@ -92,6 +92,24 @@ class PrismatixApp(App):
         if turn.mode == "help" or turn.mode == "unknown":
             log.write(HELP)
             return
+        if turn.mode == "do":
+            goal = text[len("/do"):].strip()
+            log.write(f"[bold cyan]agent[/] {goal}")
+
+            def on_step(tool, args, output):
+                one = " ".join(str(output).split())[:150]
+                log.write(f"[magenta]tool[/] {tool} {args} -> {one}")
+
+            import prismatix.agent as _agent
+            self.streaming = True
+            try:
+                answer = _agent.run_agent(self.engine, goal, on_step=on_step)
+                log.write(f"[bold green]agent answer[/]\n{answer}")
+            except Exception as e:
+                log.write(f"[red]agent error:[/] {e!r}")
+            finally:
+                self.streaming = False
+            return
 
         log.write(f"\n[bold cyan]you ({turn.mode})[/] {text}")
         self.streaming = True

@@ -30,6 +30,7 @@ def run_agent(
     goal: str,
     on_step: Optional[Callable[[str, str, str], None]] = None,
     max_steps: int = MAX_STEPS,
+    max_tokens: int = 400,
 ) -> str:
     """Run the loop; returns the final answer text.
 
@@ -43,7 +44,7 @@ def run_agent(
 
     for step in range(max_steps):
         prompt = engine.prompt_for(messages, system=None, tools=openai_tool_list())
-        reply = engine.generate_raw(prompt, max_tokens=400)
+        reply = engine.generate_raw(prompt, max_tokens=max_tokens)
         call = parse_tool_call(reply)
 
         if call is None:                       # the model's final answer
@@ -75,5 +76,5 @@ def run_agent(
 
     # budget exhausted: one forced synthesis turn, tools withheld
     prompt = engine.prompt_for(messages, system=None)
-    reply = engine.generate_raw(prompt, max_tokens=400)
+    reply = engine.generate_raw(prompt, max_tokens=max_tokens)
     return reply.strip()

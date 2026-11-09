@@ -103,7 +103,19 @@ def run(out_path: Path, model_id: str | None = None,
         out_path.write_text("\n".join(json.dumps(r) for r in rows))
     summary = {"passed": passed, "total": len(AGENT_TASKS),
                "pass_rate": passed / len(AGENT_TASKS)}
-    print(f"\nagent benchmark: {passed}/{len(AGENT_TASKS)}")
     Path(str(out_path).replace(".jsonl", ".summary.json")).write_text(
         json.dumps(summary, indent=2))
     return summary
+
+
+if __name__ == "__main__":
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--model", default=None)
+    ap.add_argument("--adapter", default=None)
+    args = ap.parse_args()
+    summary = run(Path(args.out), model_id=args.model, adapter=args.adapter)
+    print(f"\nagent benchmark: {summary['passed']}/{summary['total']} "
+          f"({summary['pass_rate']*100:.0f}%)")

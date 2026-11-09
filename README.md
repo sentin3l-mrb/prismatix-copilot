@@ -96,9 +96,17 @@ artifacts/          eval outputs (gitignored except .summary files)
   confidential data was sent anywhere.
 
 ## Honest scope statement (for the university write-up)
-- We did **not** train a model from scratch; we fine-tuned ~n million of 4B
-  parameters as a LoRA rank-16 adapter (~tens of MB) for ~300 steps.
+- We did **not** train a model from scratch; we fine-tuned ~16M of 4.2B
+  parameters (0.386%) as a LoRA rank-16 adapter (~62 MB) for a few hundred
+  steps on Apple Silicon.
+- **One full LoRA run failed loudly** (see LOG.md #14-15): an over-aggressive
+  recipe (lr 1e-4 x scale 20) drove train loss to 0.09 but made every
+  generation degenerate -> benchmark 0/16. We retrained with lr 1e-5.
+  Lesson recorded: *val loss alone does not imply usable output — score
+  generations.*
 - The training data is **synthetic and self-authored**: it teaches a format,
   and the evaluation measures format generalization plus task correctness —
   the same 16-instance benchmark scored with deterministic checks.
-- Throughput/memory numbers are measured, not estimated: see LOG.md.
+- The SQL portion of the benchmark harness itself was debugged mid-project
+  (grader fixes changed a first logged score of 10/16 to a corrected 13/16
+  with *no model change*); both numbers are kept in LOG.md.

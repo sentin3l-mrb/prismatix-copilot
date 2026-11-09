@@ -1,0 +1,5 @@
+#!/bin/bash
+# Prismatix launcher: exec the project's venv python (native window).
+VENV="/Users/m1pro/Documents/AI from scratch by prismatix linear /prismatix-copilot/.venv/bin/python"
+[ -x "$VENV" ] || { echo "venv missing at $VENV — build it first"; exit 1; }
+exec "$VENV" -m prismatix --web

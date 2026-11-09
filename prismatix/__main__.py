@@ -22,24 +22,30 @@ def main():
         from prismatix.desktop import build_app, launch_window, wait_for_server
         from rag.retriever import Retriever
 
-        adapter = resolve_adapter(args.adapter)
-        app = build_app(model_id=args.model, adapter=adapter,
-                        retriever=Retriever())
-
-        server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=7600,
-                                               log_level="warning"))
-        threading.Thread(target=server.run, daemon=True).start()
-        if not wait_for_server(7600):
-            print("warning: server did not bind in 15s; opening anyway")
+        # Port already owned? (e.g. the terminal copy is running): don't start
+        # a second engine — attach our window to the running server instead.
+        shared = wait_for_server(7600, timeout_s=0.7)
+        if not shared:
+            adapter = resolve_adapter(args.adapter)
+            app = build_app(model_id=args.model, adapter=adapter,
+                            retriever=Retriever())
+            server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1",
+                                                   port=7600, log_level="warning"))
+            threading.Thread(target=server.run, daemon=True).start()
+            if not wait_for_server(7600):
+                print("warning: server did not bind in 15s; opening anyway")
+        else:
+            print("server already running on :7600 — attaching this window to it")
 
         url = "http://127.0.0.1:7600"
         if launch_window(url):
-            print("native window closed — stopping server")
+            print("native window closed")
             return
-        # no pywebview: fall back to a blocking server + browser tab
         print(f"prismatix desktop on {url}  (ctrl+c to stop)")
         import webbrowser
         webbrowser.open(url)
+        if shared:
+            return                     # existing server lives elsewhere
         server.run()
         return
 

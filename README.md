@@ -120,7 +120,15 @@ scripts/            smoke test
 tests/              offline pytest suite (graders + routing) — no model needed
 LOG.md              honest experiment log: what failed and what it cost
 artifacts/          eval outputs (gitignored except .summary files)
+docs/               build_walkthrough.md — the complete meticulous build story
 ```
+
+An installed native application is built from the same tree:
+`bash scripts/install_app.sh --install` → `/Applications/Prismatix.app`
+(icon generated in-repo; bundle contents documented in the walkthrough §10).
+
+**The full build story — every decision, bug and number — is written up in
+[`docs/build_walkthrough.md`](docs/build_walkthrough.md).**
 
 ## Licenses
 - Model **Qwen3.5-4B**: Apache-2.0 (verified from the HF model card; we

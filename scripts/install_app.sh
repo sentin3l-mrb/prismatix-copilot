@@ -42,13 +42,22 @@ cat > "$PLIST" <<'PLISTEOF'
 </plist>
 PLISTEOF
 
-cat > "$APP/Contents/MacOS/prismatix" <<LAUNCHEOF
-#!/bin/bash
+
+# generate the launcher with exact baked-in absolute paths (python repr-quoting
+# handles the spaces in this repo path; a bash heredoc mangles them)
+.venv/bin/python - <<'PYGEN'
+from pathlib import Path
+repo = Path.cwd()
+launcher = f"""#!/bin/bash
 # Prismatix launcher: exec the project's venv python (native window).
-VENV="$REPO/.venv/bin/python"
-[ -x "\$VENV" ] || { echo "venv missing at \$VENV — build it first"; exit 1; }
-exec "\$VENV" -m prismatix --web
-LAUNCHEOF
+REPO={str(repo)!r}
+PY="$REPO/.venv/bin/python"
+[ -x "$PY" ] || {{ echo "venv missing: $PY"; exit 1; }}
+cd "$REPO"
+exec "$PY" -m prismatix --web
+"""
+Path("build/Prismatix.app/Contents/MacOS/prismatix").write_text(launcher)
+PYGEN
 chmod +x "$APP/Contents/MacOS/prismatix"
 
 echo "4/4  icon"

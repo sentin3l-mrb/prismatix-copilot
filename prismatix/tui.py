@@ -96,12 +96,21 @@ class PrismatixApp(App):
         log.write(f"\n[bold cyan]you ({turn.mode})[/] {text}")
         self.streaming = True
         try:
+            # Stream tokens into a line buffer: RichLog renders every write()
+            # as its own block, so writing per-token would stack single tokens
+            # vertically. We flush per LINE instead (natural chat output).
             chunks = []
+            buf = ""
             t0 = time.perf_counter()
             for piece in self.engine.stream(turn.messages, system=turn.system,
                                             max_tokens=turn.max_tokens):
                 chunks.append(piece)
-                log.write(piece, shrink=False, expand=False)
+                buf += piece
+                while "\n" in buf:
+                    line, buf = buf.split("\n", 1)
+                    log.write(line)
+            if buf:
+                log.write(buf)
             answer = "".join(chunks)
             secs = time.perf_counter() - t0
             log.write(f"\n[dim]{len(answer.split())} words · {secs:.1f}s[/]")

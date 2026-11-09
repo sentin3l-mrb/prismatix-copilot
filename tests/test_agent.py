@@ -41,8 +41,9 @@ def test_tool_call_then_answer():
 
 def test_step_budget_stops_the_loop():
     call = F + '{"name": "search_text", "arguments": {"pattern": "x"}}' + F
-    # endless model, then a canned "synthesis" turn for the forced final step
-    eng = ScriptedEngine([call] * 10 + ["Forced final answer without tools."])
+    # exactly 3 tool calls (the budget), then ONE forced synthesis turn;
+    # any further generate_raw call would IndexError the scripted sequence
+    eng = ScriptedEngine([call] * 3 + ["Forced final answer without tools."])
     answer = run_agent(eng, "loop forever", max_steps=3)
     assert answer == "Forced final answer without tools."
 

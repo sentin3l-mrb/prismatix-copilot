@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import time
 
+from rich.markup import escape
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Footer, Header, Input, RichLog
@@ -98,20 +99,20 @@ class PrismatixApp(App):
 
             def on_step(tool, args, output):
                 one = " ".join(str(output).split())[:150]
-                log.write(f"[magenta]tool[/] {tool} {args} -> {one}")
+                log.write(f"[magenta]tool[/] {escape(tool + ' ' + str(args))} -> {escape(one)}")
 
             import prismatix.agent as _agent
             self.streaming = True
             try:
                 answer = _agent.run_agent(self.engine, goal, on_step=on_step)
-                log.write(f"[bold green]agent answer[/]\n{answer}")
+                log.write(f"[bold green]agent answer[/]\n{escape(answer)}")
             except Exception as e:
                 log.write(f"[red]agent error:[/] {e!r}")
             finally:
                 self.streaming = False
             return
 
-        log.write(f"\n[bold cyan]you ({turn.mode})[/] {text}")
+        log.write(f"\n[bold cyan]you ({turn.mode})[/] {escape(text)}")
         self.streaming = True
         try:
             # Stream tokens into a line buffer: RichLog renders every write()
@@ -126,9 +127,9 @@ class PrismatixApp(App):
                 buf += piece
                 while "\n" in buf:
                     line, buf = buf.split("\n", 1)
-                    log.write(line)
+                    log.write(escape(line))
             if buf:
-                log.write(buf)
+                log.write(escape(buf))
             answer = "".join(chunks)
             secs = time.perf_counter() - t0
             log.write(f"\n[dim]{len(answer.split())} words · {secs:.1f}s[/]")

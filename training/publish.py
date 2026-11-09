@@ -117,8 +117,7 @@ def publish(hf_id: str, dataset_id: str) -> None:
 
     api.create_repo(repo_id=hf_id, repo_type="model", exist_ok=True)
     api.upload_folder(
-        repo_type="model", repo_id=hf_id, path_in_repo=".",
-        local_dir=ADAPTER_DIR.expanduser(),
+        repo_type="model", repo_id=hf_id, folder_path=ADAPTER_DIR,
         commit_message="prismatix style LoRA adapter (rank-16, 400 SFT examples)",
     )
     card = MODEL_CARD.format(dataset_id=dataset_id, hf_id=hf_id,

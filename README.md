@@ -29,6 +29,8 @@ fully on your own laptop**. No cloud, no API keys, no data leaves the machine.
 
 Benchmark: 16 tasks · deterministic graders · same seed (7) for both runs.
 
+![benchmark chart](artifacts/benchmark_chart.png)
+
 | benchmark (16 tasks) | base 4-bit | v2 LoRA (rank 16, scale 10) | v3 LoRA (rank 8, scale 2) |
 |---|---|---|---|
 | coding (6) | **5/6** | 4/6 | 4/6 |

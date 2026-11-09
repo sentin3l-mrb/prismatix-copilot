@@ -1,0 +1,24 @@
+# Prismatix LoRA training config (mlx-lm `--config` schema).
+# Rank 16 / scale 20 on attention+MLP projections, prompt tokens masked out of
+# the loss; small iters budget so the whole run stays laptop-friendly.
+model: "mlx-community/Qwen3.5-4B-4bit"
+train: true
+data: "training/split"
+fine_tune_type: "lora"
+optimizer: "adamw"
+batch_size: 1
+iters: 300
+val_batches: 8
+learning_rate: 1e-4
+steps_per_report: 20
+steps_per_eval: 100
+save_every: 100
+adapter_path: "adapters/prismatix-style"
+grad_checkpoint: true
+grad_accumulation_steps: 4
+mask_prompt: true
+seed: 42
+lora_parameters:
+  rank: 16
+  dropout: 0.0
+  scale: 20.0

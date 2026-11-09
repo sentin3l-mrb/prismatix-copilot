@@ -64,7 +64,7 @@ def run_eval(model_id: str, adapter: str | None, out_path: Path,
     return summary
 
 
-def summarize(rows: list) -> dict:
+def summarize(rows: list, wall: float | None = None) -> dict:
     by_kind = defaultdict(lambda: {"pass": 0, "total": 0})
     tps, passed = [], 0
     for r in rows:

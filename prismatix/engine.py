@@ -55,12 +55,16 @@ class GenResult:
 
 @dataclass
 class LocalEngine:
-    model_id: str = DEFAULT_MODEL_ID
+    model_id: Optional[str] = None   # None -> DEFAULT_MODEL_ID (see __post_init__)
     adapter_path: Optional[str] = None
     max_kv_size: int = 4096
 
     _model: object = field(default=None, init=False, repr=False)
     _tokenizer: object = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        if self.model_id is None:
+            self.model_id = DEFAULT_MODEL_ID
 
     # -- lifecycle -----------------------------------------------------------
     def load(self) -> None:
@@ -88,14 +92,21 @@ class LocalEngine:
         messages: List[dict],
         system: Optional[str] = None,
         add_generation_prompt: bool = True,
+        thinking: bool = False,
     ) -> str:
         msgs = []
         sys = system or SYSTEM_PROMPT
         if sys:
             msgs.append({"role": "system", "content": sys})
         msgs.extend(messages)
+        # Qwen3.5 is a thinking hybrid; its chat template supports
+        # `enable_thinking`. Copilots want direct answers, so default False.
+        # (Templates that don't know this kwarg simply ignore it.)
         return self._tokenizer.apply_chat_template(
-            msgs, tokenize=False, add_generation_prompt=add_generation_prompt
+            msgs,
+            tokenize=False,
+            add_generation_prompt=add_generation_prompt,
+            enable_thinking=thinking,
         )
 
     def count_tokens(self, messages: List[dict], system: Optional[str] = None) -> int:

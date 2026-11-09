@@ -27,14 +27,22 @@ fully on your own laptop**. No cloud, no API keys, no data leaves the machine.
 
 ## Results
 
+Benchmark: 16 tasks · deterministic graders · same seed (7) for both runs.
+
 | benchmark (16 tasks) | base Qwen3.5-4B-4bit | + LoRA adapter |
 |---|---|---|
-| coding (6) | TBD | TBD |
-| sql (3) | TBD | TBD |
-| brief (4) | TBD | TBD |
-| email (3) | TBD | TBD |
-| **total pass rate** | TBD | TBD |
-| throughput tok/s | TBD | TBD |
+| coding (6) | 5/6 | TBD |
+| sql (3) | 3/3 | TBD |
+| brief (4) | 2/4 | TBD |
+| email (3) | 3/3 | TBD |
+| **total pass rate** | **13/16 (81%)** | TBD |
+| avg generation | 41.2 tok/s | TBD |
+
+Base-model notes (from the run, artifacts/eval_runs/base.jsonl):
+- coding fail: model emitted a Python dict comprehension with an unparenthesized
+  `:=` (SyntaxError) — code that "looks right" but doesn't run.
+- briefs: facts present but rephrased ("34% of 63" instead of stating "63");
+  the rubric requires numbers-first house style. **This is what the LoRA targets.**
 
 ## Run it
 

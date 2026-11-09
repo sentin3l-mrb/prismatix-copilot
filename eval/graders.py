@@ -34,8 +34,10 @@ def extract_sql(text: str) -> Optional[str]:
     if block:
         # strip things like ';' duplicates that break nothing but keep it tidy
         return block.strip().rstrip(";") + ";"
-    # fall back: use the whole response if it looks like bare SQL
-    t = text.strip().rstrip(";") + ";"
+    # fallback: bare SQL. Our system prompt invites 'only the query' so the
+    # explanation prose that follows is not part of the statement. Keep only
+    # the first paragraph / first statement.
+    t = text.strip().split("\n\n")[0].strip().rstrip(";") + ";"
     return t if re.match(r"(?is)\s*(select|with)\b", t) else None
 
 

@@ -156,8 +156,8 @@ SQL_TASKS: List[dict] = [
         "kind": "sql",
         "prompt": (
             "Same schema (customers: id, name, region, plan, signed_up; orders: id, customer_id, "
-            "amount, order_date). Return the names of the 3 customers with the highest total "
-            "order revenue, highest first. Ties broken by name."
+            "amount, order_date). Return the name AND total order revenue of the 3 customers with "
+            "the highest total revenue, highest first. Ties broken by name."
         ),
         "grader": SQLGrader(reference_sql=(
             "SELECT c.name, SUM(o.amount) AS rev FROM customers c "

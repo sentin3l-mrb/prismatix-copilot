@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from prismatix.desktop import resolve_adapter
 from prismatix.headless import build_parser
 
 
@@ -54,7 +55,6 @@ def main():
         headless_main(argv)
         return
 
-    from prismatix.desktop import resolve_adapter
 
     from prismatix.tui import PrismatixApp
     PrismatixApp(model_id=args.model, adapter=resolve_adapter(args.adapter),

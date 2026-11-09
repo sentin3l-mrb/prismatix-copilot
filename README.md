@@ -122,7 +122,8 @@ scripts/            smoke test
 tests/              offline pytest suite (graders + routing) — no model needed
 LOG.md              honest experiment log: what failed and what it cost
 artifacts/          eval outputs (gitignored except .summary files)
-docs/               build_walkthrough.md — the complete meticulous build story
+docs/               build_walkthrough.md (the full build story)
+                    my_project_simply.md (the plain-language personal guide)
 ```
 
 An installed native application is built from the same tree:

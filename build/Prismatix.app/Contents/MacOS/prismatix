@@ -1,7 +1,0 @@
-#!/bin/bash
-# Prismatix launcher: exec the project's venv python (native window).
-REPO='/Users/m1pro/Documents/AI from scratch by prismatix linear /prismatix-copilot'
-PY="$REPO/.venv/bin/python"
-[ -x "$PY" ] || { echo "venv missing: $PY"; exit 1; }
-cd "$REPO"
-exec "$PY" -m prismatix --web

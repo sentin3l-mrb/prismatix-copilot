@@ -4,6 +4,9 @@ __pycache__/
 *.pyc
 *.egg-info/
 
+# macOS junk
+.DS_Store
+
 # Model + artifact caches (large)
 .cache/
 artifacts/eval_runs/

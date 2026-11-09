@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Model + artifact caches (large)
+.cache/
+artifacts/eval_runs/
+adapters/*.npz.tmp
+
+# Never commit anything private / confidential
+*.keys
+.env
+private_docs/

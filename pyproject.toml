@@ -1,0 +1,25 @@
+[project]
+name = "prismatix-copilot"
+version = "0.1.0"
+description = "Local, privacy-first developer & business copilot TUI built on a small open-weight model (Qwen3.5-4B, Apache-2.0), with RAG and a LoRA adapter fine-tuned on Apple Silicon."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "mlx-lm>=0.20",
+    "fastembed>=0.3",
+    "textual>=0.60",
+    "rich>=13.0",
+    "numpy>=1.26",
+    "huggingface_hub>=0.23",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+# `python -m prismatix` starts the TUI
+[project.scripts]
+prismatix = "prismatix.__main__:main"
+
+[tool.uv]
+package = false

@@ -55,7 +55,7 @@ def build_app(engine: Optional[LocalEngine] = None, retriever=None) -> FastAPI:
     @app.get("/api/chat")
     def chat(q: str, mode: str = "chat"):
         turn = route(f"/{mode} {q}" if mode != "chat" else q)
-        if turn is None or turn.max_tokens == 0:
+        if turn is None or turn.max_tokens == 0 or turn.mode == "unknown":
             return JSONResponse({"error": "unknown mode", "help": HELP})
 
         rag_ctx = ""

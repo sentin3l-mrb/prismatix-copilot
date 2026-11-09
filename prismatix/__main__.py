@@ -15,18 +15,31 @@ def main():
     args = build_parser().parse_args()
 
     if getattr(args, "web", False):
+        import threading
+
         import uvicorn
-        from prismatix.desktop import build_app
+        from prismatix.desktop import build_app, launch_window, wait_for_server
         from rag.retriever import Retriever
 
-        adapter = args.adapter  # default: adapters/prismatix-style-v2 (your LoRA)
-        adapter = adapter or "adapters/prismatix-style-v2"
-        if not Path(adapter).exists():
-            adapter = None
+        adapter = resolve_adapter(args.adapter)
+        app = build_app(model_id=args.model, adapter=adapter,
+                        retriever=Retriever())
 
-        app = build_app(retriever=Retriever(), model_id=args.model, adapter=adapter)
-        print("prismatix desktop on http://127.0.0.1:7600  (ctrl+c to stop)")
-        uvicorn.run(app, host="127.0.0.1", port=7600, log_level="warning")
+        server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=7600,
+                                               log_level="warning"))
+        threading.Thread(target=server.run, daemon=True).start()
+        if not wait_for_server(7600):
+            print("warning: server did not bind in 15s; opening anyway")
+
+        url = "http://127.0.0.1:7600"
+        if launch_window(url):
+            print("native window closed — stopping server")
+            return
+        # no pywebview: fall back to a blocking server + browser tab
+        print(f"prismatix desktop on {url}  (ctrl+c to stop)")
+        import webbrowser
+        webbrowser.open(url)
+        server.run()
         return
 
     if args.headless is not None:
@@ -41,13 +54,10 @@ def main():
         headless_main(argv)
         return
 
-    adapter = args.adapter
-    if not adapter:
-        default_obj = Path("adapters/prismatix-style-v2/adapters.safetensors")
-        adapter = "adapters/prismatix-style-v2" if default_obj.exists() else None
+    from prismatix.desktop import resolve_adapter
 
     from prismatix.tui import PrismatixApp
-    PrismatixApp(model_id=args.model, adapter=adapter,
+    PrismatixApp(model_id=args.model, adapter=resolve_adapter(args.adapter),
                  rag=not args.no_rag).run()
 
 

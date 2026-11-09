@@ -98,11 +98,15 @@ uv sync                       # installs fastapi/uvicorn too
 python -m prismatix --web     # Desktop UI: http://127.0.0.1:7600
 ```
 
-The desktop UI is a local web app: chromium-based window via `pywebview` if
-installed (`uv pip install pywebview`), otherwise paste
-`http://127.0.0.1:7600` into any browser. It uses the same engine and router
-as the TUI: one model instance, streamed tokens, live agent tool-step panel.
-Nothing talks to the network — no CDN, no fonts, no API calls.
+The desktop UI is a native window: `pywebview` wraps the local FastAPI app in
+a real macOS `WKWebView` window (dock icon, cmd-tab, the works). The same UI
+also stays reachable at `http://127.0.0.1:7600`; if `pywebview` is missing the
+app falls back to opening your browser, and **nothing talks to the network** —
+no CDN, no fonts, no API calls.
+
+```bash
+python -m prismatix --web     # native window + local server on :7600
+```
 
 ## Repo layout
 

@@ -27,6 +27,47 @@ from prismatix.commands import HELP, route
 from prismatix.engine import LocalEngine
 
 STATIC = Path(__file__).parent / "static"
+PORT = 7600
+
+
+def resolve_adapter(cli_adapter: Optional[str]) -> Optional[str]:
+    """--adapter wins; otherwise the project's own LoRA when present."""
+    if cli_adapter:
+        return cli_adapter
+    default = Path("adapters/prismatix-style-v2/adapters.safetensors")
+    return "adapters/prismatix-style-v2" if default.exists() else None
+
+
+def launch_window(url: str) -> bool:
+    """Open a native macOS window (pywebview/WKWebView).
+
+    Returns False when pywebview is unavailable (pure-server fallback).
+    Blocks until the user closes the window.
+    """
+    try:
+        import webview
+    except ImportError:
+        return False
+    webview.create_window(
+        "prismatix — local copilot", url,
+        width=1120, height=760, min_size=(760, 560),
+    )
+    webview.start()          # native event loop; blocks until window closes
+    return True
+
+
+def wait_for_server(port: int, timeout_s: float = 15.0) -> bool:
+    """Block until the local port accepts TCP connections (or give up)."""
+    import socket
+    import time
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.4):
+                return True
+        except OSError:
+            time.sleep(0.2)
+    return False
 
 
 def sse(event: str, data: dict) -> str:

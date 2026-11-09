@@ -4,6 +4,7 @@ NN search runs in numpy — fine for thousands of chunks, trivial to teach."""
 from __future__ import annotations
 
 import sqlite3
+import threading
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +14,10 @@ class VectorStore:
     def __init__(self, db_path: str | Path = ".cache/rag.sqlite3"):
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
         self.db_path = db_path
-        self.conn = sqlite3.connect(str(db_path))
+        # FastAPI serves requests from threadpool workers, so the shared
+        # connection must allow cross-thread use; the lock serializes it.
+        self.conn = sqlite3.connect(str(db_path), check_same_thread=False)
+        self._lock = threading.Lock()
         self.conn.execute(
             """CREATE TABLE IF NOT EXISTS chunks (
                    id INTEGER PRIMARY KEY,
@@ -24,26 +28,32 @@ class VectorStore:
         )
 
     def upsert(self, source: str, text: str, vec: list[float]) -> None:
-        self.conn.execute(
-            "INSERT INTO chunks (source, text, dim, vec) VALUES (?,?,?,?)",
-            (source, text, len(vec), np.asarray(vec, dtype=np.float32).tobytes()),
-        )
+        with self._lock:
+            self.conn.execute(
+                "INSERT INTO chunks (source, text, dim, vec) VALUES (?,?,?,?)",
+                (source, text, len(vec), np.asarray(vec, dtype=np.float32).tobytes()),
+            )
 
     def count(self) -> int:
-        return self.conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
+        with self._lock:
+            return self.conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
 
     def clear(self) -> None:
-        self.conn.execute("DELETE FROM chunks")
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute("DELETE FROM chunks")
+            self.conn.commit()
 
     def commit(self) -> None:
-        self.conn.commit()
+        with self._lock:
+            self.conn.commit()
 
     def search(self, query_vec: list[float], k: int = 4) -> list[dict]:
         """Exact cosine similarity search (unnormalized vecs are rescaled)."""
+        with self._lock:
+            rows = self.conn.execute(
+                "SELECT id, source, text, vec FROM chunks").fetchall()
         q = np.asarray(query_vec, dtype=np.float32)
         q = q / (np.linalg.norm(q) + 1e-9)
-        rows = self.conn.execute("SELECT id, source, text, vec FROM chunks").fetchall()
         if not rows:
             return []
         mat = np.vstack([np.frombuffer(r[3], dtype=np.float32) for r in rows])

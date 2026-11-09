@@ -160,17 +160,26 @@ class LocalEngine:
         temperature: float = 0.2,
         system: Optional[str] = None,
     ) -> Iterator[str]:
-        """Yield token-by-token text; richer UX for the live TUI."""
+        """Yield token-by-token text; richer UX for the live TUI.
+
+        Note (mlx-lm 0.32.x): sampling params are no longer accepted as raw
+        kwargs by stream_generate — they go through a `sampler` callable,
+        built with `make_sampler(temp=...)`. Verified against the installed
+        version signature; LOG entry #19.
+        """
         from mlx_lm import stream_generate
+        from mlx_lm.sample_utils import make_sampler
 
         self.load()
         prompt = self.prompt_for(messages, system=system)
+        sampler = make_sampler(temp=temperature)
+        # logit-bias-free sampling; greedy-ish at temp=0.2 for stable outputs
         for chunk in stream_generate(
             self._model,
             self._tokenizer,
             prompt=prompt,
             max_tokens=max_tokens,
-            temperature=temperature,
+            sampler=sampler,
         ):
             # mlx-lm versions differ: older yield str, newer yield objects with .text
             text = getattr(chunk, "text", None)

@@ -123,19 +123,19 @@ def publish(hf_id: str, dataset_id: str) -> None:
     card = MODEL_CARD.format(dataset_id=dataset_id, hf_id=hf_id,
                              eval_block=BASE_MODEL_EVAL,
                              model_id=hf_id)
-    api.upload_file(repo_type="model", repo_id=hf_id, path_or_pathobj="README.md",
+    api.upload_file(repo_type="model", repo_id=hf_id,
                     path_in_repo="README.md",
                     path_or_fileobj=card.encode(),
                     commit_message="model card: usage + honest scope")
 
     api.create_repo(repo_id=dataset_id, repo_type="dataset", exist_ok=True)
     api.upload_file(repo_type="dataset", repo_id=dataset_id,
-                    path_or_pathobj="dataset.jsonl", path_in_repo="dataset.jsonl",
+                    path_in_repo="dataset.jsonl",
                     path_or_fileobj=DATASET_FILE.read_text().encode(),
                     commit_message="400 self-authored SFT examples")
-    dcard = DATASET_CARD.format(model_id=hf_id)
+    dcard = DATASET_CARD.replace("{model_id}", hf_id)
     api.upload_file(repo_type="dataset", repo_id=dataset_id,
-                    path_or_pathobj="README.md", path_in_repo="README.md",
+                    path_in_repo="README.md",
                     path_or_fileobj=dcard.encode(),
                     commit_message="dataset card")
 

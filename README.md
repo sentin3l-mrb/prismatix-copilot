@@ -132,6 +132,23 @@ An installed native application is built from the same tree:
 **The full build story — every decision, bug and number — is written up in
 [`docs/build_walkthrough.md`](docs/build_walkthrough.md).**
 
+## The model is public — download it and run my exact assistant
+
+The fine-tuned adapter and its training data are published on Hugging Face:
+
+- model (LoRA adapter + card): https://huggingface.co/sentin3l-mrb/prismatix-style-v2
+- SFT dataset (400 self-authored examples): https://huggingface.co/datasets/sentin3l-mrb/prismatix-sft
+
+Anyone with an Apple-Silicon Mac can reproduce *this* assistant's voice in three commands:
+
+```bash
+pip install mlx-lm
+python -m mlx_lm.chat --model mlx-community/Qwen3.5-4B-4bit \
+    --adapter-path sentin3l-mrb/prismatix-style-v2
+```
+
+License chain: adapter Apache-2.0 · base model Apache-2.0 · dataset Apache-2.0 · code MIT.
+
 ## Licenses
 - Model **Qwen3.5-4B**: Apache-2.0 (verified from the HF model card; we
   originally picked Qwen2.5-Coder-3B but switched — see LOG.md for the audit).

@@ -231,6 +231,48 @@ model is the generalist. Knowing which lever does what is the result.
 
 ---
 
+## 7b. The model-swap experiment (Nov 10): 4B vs 9B, same everything else
+
+With the benchmark harness, agent loop and eval scripts all
+`--model`-parameterized, swapping brains is one flag:
+`--model mlx-community/Qwen3.5-9B-4bit`. The 9B weights (~5.4 GB on disk)
+were downloaded, the smoke test loaded in 5.8 s and generated at 27 tok/s
+(only ~35% slower than 4B despite 2.2× parameters).
+
+**16-task results: 13/16 (81%) — identical total, different error profile.**
+Code went from 5/6 to **6/6** (the unparenthesized-`:=` class of failure
+disappeared — deeper arithmetic competency). SQL fell 3/3 → 2/3: on the
+"Same schema…" prompt the 9B invented a `plans` table instead of noticing
+which tables exist (the 4B got it right for probably less sophisticated
+reasons). One email lost its required CTA markers. All within one seed —
+single-instance evidence, not a leaderboard claim.
+
+**Agent results: 2/6 on the 9B vs 3/6 on the 4B — the surprising finding.**
+Failure quotes from the 9B (LOG #29): it reported *"the search tool
+encountered a persistent error"* and gave up; where the 4B had *guessed*
+answers from prompt-adjacent memory (README.md "lists all tools"), the 9B
+answered with more nuance but *still didn't open* `prismatix/tools.py` —
+and its richer search expressions kept tripping our strict regex tool
+(on that task the 4B's simpler queries accidentally succeeded).
+Prediction logged BEFORE the run: 14–15/16 on the suite and 4–5/6 on the
+agent if reasoning helps; the agent part of the prediction was wrong and
+kept, which is the point of writing predictions down.
+
+Practical takeaways for the report:
+1. **More parameters bought code competency, not tool navigation.** The
+   capability gap for agent work is in *calibration and tool ergonomics*
+   (strict regex tool + no feedback loop), not raw intelligence.
+2. **Cost side:** 2.3× slower wall-clock on the full suite (95 s vs 53 s),
+   ~6 GB working set against 16 GB total, and the LoRA adapters **do not
+   transfer** between bases (they are trained against 4B layer shapes) —
+   a fresh recipe would be needed for the 9B.
+3. The single biggest practical improvement this experiment points to is
+   better *tool design* (lenient matching, fuzzy fallbacks, clearer error
+   feedback), not a bigger model. That's rare in student projects and
+   entirely data-backed here.
+
+---
+
 ## 8. Agent mode (`agent.py`, `tools.py`) — `/do`
 
 The loop (identical in shape to OpenCode/Claude Code):

@@ -33,16 +33,33 @@ Benchmark: 16 tasks · deterministic graders · same seed (7) for both runs.
 
 ![benchmark chart](artifacts/benchmark_chart.png)
 
-| benchmark (16 tasks) | base 4-bit | v2 LoRA (rank 16, scale 10) | v3 LoRA (rank 8, scale 2) |
-|---|---|---|---|
-| coding (6) | **5/6** | 4/6 | 4/6 |
-| sql (3) | **3/3** | 2/3 | 2/3 |
-| brief (4) | 2/4 | **4/4** | 3/4 |
-| email (3) | **3/3** | 2/3 | **3/3** |
-| **total pass rate** | **13/16 (81%)** | 12/16 (75%) | 12/16 (75%) |
-| avg generation | **41.2 tok/s** | 24.9 tok/s | 28.2 tok/s |
-| trainable params | — | 16.2M (0.386%) | 8.1M (0.193%) |
-| final val loss | — | ~0.006 (saturated) | 0.089 (healthy curve) |
+| benchmark (16 tasks) | base 4-bit | v2 LoRA (rank 16, scale 10) | v3 LoRA (rank 8, scale 2) | 9B base (Qwen3.5-9B-4bit) |
+|---|---|---|---|---|
+| coding (6) | **5/6** | 4/6 | 4/6 | **6/6** |
+| sql (3) | **3/3** | 2/3 | 2/3 | 2/3 |
+| brief (4) | 2/4 | **4/4** | 3/4 | 3/4 |
+| email (3) | **3/3** | 2/3 | **3/3** | 2/3 |
+| **total pass rate** | **13/16 (81%)** | 12/16 (75%) | 12/16 (75%) | **13/16 (81%)** |
+| avg generation | **41.2 tok/s** | 24.9 tok/s | 28.2 tok/s | 25.8 tok/s |
+| working-set RAM | ~2.4 GB | ~2.4 GB (+62 MB adapter) | ~2.4 GB (+31 MB) | ~6 GB |
+| trainable params | — | 16.2M (0.386%) | 8.1M (0.193%) | — (base only) |
+| final val loss | — | ~0.006 (saturated) | 0.089 (healthy curve) | — |
+
+**Model-swap experiment (Nov 10):** the same 16 tasks run on **Qwen3.5-9B-4bit**
+(2.2× parameters) — README table row: **13/16 (81%)**, 25.8 tok/s, ~6 GB RAM.
+Same total as the 4B base but a *different error profile*: code went 5/6 → 6/6,
+SQL dropped 3/3 → 2/3 (one hallucinated table name), one email lost its
+required parts. And on the **agent benchmark the 9B scored WORSE: 2/6 vs the
+4B's 3/6** — it burned its step budget on search calls that kept erroring
+(complex regex), hedged "cannot definitively identify", and answered
+tool-questions from memory (README.md) instead of checking files. Finding:
+**parameters ≠ tool navigation; tool ergonomics and calibration dominate.**
+(Limitation noted: the v2 LoRA adapter is trained against 4B weights and does
+not transfer to the 9B base — a new adapter recipe would be required.)
+
+**Agent benchmark (6 repo-facts tasks, `python -m eval.run_agent_eval`):**
+4B base **3/6** · 9B **2/6** — doubling parameters made tool navigation worse.
+Details and failure quotes in LOG.md #28–#29.
 
 ### How to read this (the honest verdict)
 - **The base model is the strongest generalist** (13/16, fastest).

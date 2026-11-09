@@ -91,10 +91,24 @@ python -m eval.run_eval --adapter adapters/prismatix-style \
     --out artifacts/eval_runs/lora.jsonl
 ```
 
+Run them:
+
+```bash
+uv sync                       # installs fastapi/uvicorn too
+python -m prismatix --web     # Desktop UI: http://127.0.0.1:7600
+```
+
+The desktop UI is a local web app: chromium-based window via `pywebview` if
+installed (`uv pip install pywebview`), otherwise paste
+`http://127.0.0.1:7600` into any browser. It uses the same engine and router
+as the TUI: one model instance, streamed tokens, live agent tool-step panel.
+Nothing talks to the network — no CDN, no fonts, no API calls.
+
 ## Repo layout
 
 ```
-prismatix/          the app: engine (mlx), TUI (textual), slash-command router
+prismatix/          the app: engine (mlx), TUI (textual), desktop web UI (FastAPI),
+                    slash-command router, agent mode (/do with sandboxed tools)
 rag/                chunking, bge-small embeddings, SQLite vector store, seed KB
 eval/               16 benchmark tasks + automated graders + runner
 training/           synthetic dataset builder, split, mlx-lm LoRA launcher

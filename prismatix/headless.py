@@ -54,6 +54,8 @@ def build_parser():
     ap.add_argument("--model", default=None)
     ap.add_argument("--adapter", default=None)
     ap.add_argument("--max-tokens", type=int, default=500)
+    ap.add_argument("--web", action="store_true",
+                    help="launch the desktop-style local web UI (port 7600)")
     ap.add_argument("--no-rag", action="store_true")
     return ap
 

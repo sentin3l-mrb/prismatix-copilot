@@ -1,7 +1,7 @@
 # prismatix — a local, privacy-first developer & business copilot
 
 An OpenCode-style terminal copilot built on a **small open-weight model running
-fully on your own laptop**. No cloud, no API keys, no data leaves the machine.
+fully on your own laptop**. No cloud, no API keys, no data leaves the machine. 
 
 **What it does**
 - `/code` — writes Python (plan → runnable code block → edge-case note)
@@ -114,3 +114,4 @@ artifacts/          eval outputs (gitignored except .summary files)
 - The SQL portion of the benchmark harness itself was debugged mid-project
   (grader fixes changed a first logged score of 10/16 to a corrected 13/16
   with *no model change*); both numbers are kept in LOG.md.
+                            Prismatix Linear. all rights reserved

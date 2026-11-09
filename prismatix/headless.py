@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import sys
 
+from prismatix.agent import run_agent
 from prismatix.commands import HELP, route
 from prismatix.engine import LocalEngine
 from rag.retriever import Retriever

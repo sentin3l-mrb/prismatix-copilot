@@ -110,6 +110,7 @@ class LocalEngine:
         )
         if tools:
             kwargs["tools"] = tools          # Qwen templates emit tool docs
+        self.load()   # lazy: prompt_for may be the first touch (agent loop)
         return self._tokenizer.apply_chat_template(msgs, **kwargs)
 
     def count_tokens(self, messages: List[dict], system: Optional[str] = None) -> int:

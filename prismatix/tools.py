@@ -154,15 +154,33 @@ def execute(name: str, args: dict) -> str:
 # Built from chr(96) so the fence is NEVER accidentally mangled by editors.
 _FENCE = chr(96) * 3
 TOOL_CALL_RX = re.compile(rf"{_FENCE}(?:json)?\s*\n(.*?)\n?{_FENCE}", re.S)
+# Qwen3.5 tool dialect: invoke name=tool ... parameter=x ... /parameter
+XML_CALL_RX = re.compile(r"<function=\s*([a-zA-Z_][\w.]*)\s*>(.*?)</function>", re.S)
+XML_PARAM_RX = re.compile(r"<parameter=\s*([\w]+)\s*>(.*?)</parameter>", re.S)
+
+
+def _strip_json(x: str):
+    """parameter bodies arrive as text; ints stay as text too (tools coerce)."""
+    return x.strip()
 
 
 def parse_tool_call(response: str):
-    """Extract the first FENCED block that parses as {"name", "arguments"}.
+    """Extract a tool call in any supported dialect.
 
-    Tolerates fences anywhere (same line or separate line), markdown code
-    fences elsewhere, and leading prose. Returns (name, args) or None when
-    the model produced no tool call (it went for its final answer).
+    Dialect 1: fenced JSON blob {"name", "arguments"} (Qwen2.5-era).
+    Dialect 2 (observed live on Qwen3.5): a function-invoke markup block with
+    nested parameter tags, e.g. invoke name=list_files / parameter=dir.
+    Returns (name, args) or None when there is no tool call.
     """
+    # -- dialect 2: <function=name> <parameter=k>v </parameter>... ----------
+    for m in XML_CALL_RX.finditer(response):
+        name, body = m.group(1), m.group(2)
+        if name in registry:
+            args = {pm.group(1): pm.group(2).strip()
+                    for pm in XML_PARAM_RX.finditer(body)}
+            return name, args
+
+    # -- dialect 1: fenced JSON ---------------------------------------------
     fence = _FENCE
     for m in re.finditer(rf"{fence}(?:json)?[ \t]*\n?(.*?){fence}", response, re.S):
         blob = m.group(1).strip()
@@ -178,13 +196,5 @@ def parse_tool_call(response: str):
             if name and isinstance(args, dict):
                 return str(name), args
         except json.JSONDecodeError:
-            continue                    # some other code fence; keep looking
-    # last resort: a bare JSON object at the very start (unfenced)
-    m2 = re.match(r"\s*(\{.*\})", response, re.S)
-    if m2 and '"name"' in m2.group(1):
-        try:
-            obj = json.loads(m2.group(1))
-            return obj.get("name"), obj.get("arguments", {})
-        except json.JSONDecodeError:
-            pass
+            continue
     return None
